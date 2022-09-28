@@ -1,0 +1,21 @@
+name: ESPHome Builder
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+  schedule:
+    - cron: '0 */6 * * *'
+
+jobs:
+  lint:
+    runs-on: "ubuntu-latest"
+    strategy:
+      fail-fast: false
+      matrix:
+        devices: [ 's3' ]
+    steps:
+      - uses: actions/checkout@v2
+      - uses: esphome/build-action@v1.1.0
+        with:
+          yaml_file: ${{ matrix.devices }}.yaml
