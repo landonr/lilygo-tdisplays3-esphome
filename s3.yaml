@@ -9,7 +9,7 @@ esphome:
     # - tdisplays3/Free_Fonts.h
   libraries:
     - SPI
-    - Wire
+    # - Wire
     # - bodmer/tft_espi
     - lvgl/lvgl
     # - git+https://github.com/aselectroworks/Arduino-FT6336U.git
@@ -108,3 +108,5 @@ switch:
 #         App.register_component(displayControllerComponent);
 #         return {displayControllerComponent};
 #     id: displayComponent
+
+number: 
