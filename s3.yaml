@@ -1,13 +1,56 @@
 esphome:
   name: s3
   includes:
+    - tdisplays3/lvgl/lv_conf.h
+    - tdisplays3/lvgl/awesome_extra_16.h
+    - tdisplays3/lvgl/awesome_extra_16.c
+    - tdisplays3/lvgl/LvglComponent.h
     - tdisplays3/tft_espi_display.h
-    - tdisplays3/Free_Fonts.h
+    # - tdisplays3/Free_Fonts.h
   libraries:
     - SPI
+    - Wire
+    # - bodmer/tft_espi
+    - lvgl/lvgl
+    # - git+https://github.com/aselectroworks/Arduino-FT6336U.git
     - FS
     - SPIFFS
     - "file:///config/esphome/tdisplays3/TFT_eSPI"
+  platformio_options:
+    upload_speed: 921600
+    build_flags:
+      - "-D LV_CONF_INCLUDE_SIMPLE"
+      - "-D LV_LVGL_H_INCLUDE_SIMPLE"
+      - "-D LV_DEMO_CONF_INCLUDE_SIMPLE"
+      - "-I src      ; for lv_conf.h"
+      - "-D LV_MEM_SIZE=49152U           ; 48 kB lvgl memory"
+      # The folowing defines will configure the TFT display driver, size and pins
+      - "-D USER_SETUP_LOADED=1"
+      - "-D ST7789_DRIVER=1"
+      - "-D SUPPORT_TRANSACTIONS ; Default on ESP32"
+      - "-D TFT_WIDTH=240"
+      - "-D TFT_HEIGHT=320"
+      - "-D TFT_ROTATION=2 ; Rotate 180"
+      - "-D TFT_MISO=25"
+      - "-D TFT_MOSI=23"
+      - "-D TFT_SCLK=19"
+      - "-D TFT_RST=18"
+      - "-D TFT_DC=21"
+      - "-D TFT_CS=22"
+      - "-D TFT_SDA_READ            ; Read from display, it only provides an SDA pin"
+      - "-D TFT_INVERT_COLORS=0"
+      - "-D TFT_INVERSION_ON"
+      - "-D TOUCH_SDA=4"
+      - "-D TOUCH_SCL=0"
+      - "-D TOUCH_RST=-1"
+      - "-D TOUCH_IRQ=-1"
+      #- "-D TOUCH_CS=12  ; Default for TFT connector"
+      #- "-D TOUCH_CAL_DATA=268,3553,383,3532,6  ; Touch Calibration Data"
+      - "-D SPI_FREQUENCY=80000000"
+      #- "-D SPI_TOUCH_FREQUENCY=2500000"
+      - "-D SPI_READ_FREQUENCY=6000000"
+      - "-D TFT_RGB_ORDER=TFT_BGR ; Colour order Blue-Green-Red"
+
 
 esp32:
   board: esp32-s3-devkitc-1
@@ -16,6 +59,11 @@ esp32:
     type: arduino
     version: 2.0.3
     platform_version: 5.0.0
+
+custom_component:
+  - lambda: |-
+      auto lvgl_component = new LvglComponent();
+      return {lvgl_component};
 
 # Enable logging
 logger:
@@ -39,13 +87,13 @@ time:
   - platform: homeassistant
     id: ha_time
 
-interval:
-  - interval: 1s
-    then:
-    - lambda: |-
-        // displayControllerComponent->clear();
-        displayControllerComponent->drawBar();
-        displayControllerComponent->drawString(id(ha_time).now().strftime("%Y-%m-%d %H:%M:%S:%S"));
+# interval:
+#   - interval: 1s
+#     then:
+#     - lambda: |-
+#         // displayControllerComponent->clear();
+#         displayControllerComponent->drawBar();
+#         displayControllerComponent->drawString(id(ha_time).now().strftime("%Y-%m-%d %H:%M:%S:%S"));
 
 switch:
   - platform: gpio
@@ -55,8 +103,8 @@ switch:
     internal: true
     restore_mode: RESTORE_DEFAULT_ON
 
-custom_component:
-    lambda: |-
-        App.register_component(displayControllerComponent);
-        return {displayControllerComponent};
-    id: displayComponent
+# custom_component:
+#     lambda: |-
+#         App.register_component(displayControllerComponent);
+#         return {displayControllerComponent};
+#     id: displayComponent
