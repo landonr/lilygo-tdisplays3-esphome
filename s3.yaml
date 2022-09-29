@@ -7,7 +7,7 @@ esphome:
     - SPI
     - FS
     - SPIFFS
-    - "file:///config/esphome/tdisplays3/TFT_eSPI"
+    - tdisplays3=https://github.com/landonr/lilygo-tdisplays3-esphome.git
 
 esp32:
   board: esp32-s3-devkitc-1
