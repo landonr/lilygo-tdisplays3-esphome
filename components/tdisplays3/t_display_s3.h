@@ -21,7 +21,6 @@ class TDisplayS3 : public PollingComponent,
     void setup() override {
         tft.init();
         tft.fillScreen(TFT_BLACK);
-        tft.setRotation(1);
     }
 
     void loop() override {

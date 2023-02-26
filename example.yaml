@@ -55,5 +55,6 @@ display:
   - platform: tdisplays3
     id: disp
     update_interval: 1s
+    rotation: 270
     lambda: |-
       it.printf(20, 70, id(roboto), Color(255, 0, 0), id(ha_time).now().strftime("%Y-%m-%d %H:%M:%S").c_str());
