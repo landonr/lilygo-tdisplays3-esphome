@@ -1,0 +1,80 @@
+esphome:
+  name: s3
+
+external_components:
+  - source: github://landonr/lilygo-tdisplays3-esphome
+    components: [tdisplays3]
+
+esp32:
+  board: esp32-s3-devkitc-1
+  variant: esp32s3
+  framework:
+    type: arduino
+
+# Enable logging
+logger:
+
+# Enable Home Assistant API
+api:
+
+ota:
+  password: "6ada29f6f41ce1685d29d406efd25fa4"
+
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_password
+
+  # Enable fallback hotspot (captive portal) in case wifi connection fails
+  ap:
+    ssid: "S3 Fallback Hotspot"
+    password: "zQ9tuPKIfFMu"
+
+time:
+  - platform: homeassistant
+    id: ha_time
+
+switch:
+  - platform: gpio
+    pin: GPIO38
+    name: "Backlight"
+    id: backlight
+    internal: true
+    restore_mode: RESTORE_DEFAULT_ON
+
+font:
+  - file: "gfonts://Roboto"
+    id: roboto
+    size: 30
+
+display:
+  - platform: tdisplays3
+    id: disp
+    update_interval: 1s
+    rotation: 270
+    lambda: |-
+      it.printf(20, 70, id(roboto), Color(255, 0, 0), id(ha_time).now().strftime("%Y-%m-%d %H:%M:%S").c_str());
+
+i2c:
+  scl: 17
+  sda: 18
+
+touchscreen:
+  - platform: tdisplays3
+    interrupt_pin: 16
+    address: 0x15
+    # The T-Display S3 has a round button below the screen.
+    # With the current rotation (270°), touching this button produces a
+    # negative coordinate (-40), which is cannot be used in ESPHome for a
+    # touch point.
+    # Adding an offset moves *all* points by that offset, allowing to use
+    # the button in this rotation as well.
+    # Rotation 180° would need an y offset instead; this is also supported.
+    x_offset: 40
+    id: my_touchscreen
+    on_touch:
+      - lambda: |-
+         ESP_LOGI("tdisplays3-touch", "x:%d, y:%d",
+           id(my_touchscreen).x,
+           id(my_touchscreen).y
+         );
+      - switch.toggle: backlight
