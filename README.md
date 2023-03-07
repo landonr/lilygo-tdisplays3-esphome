@@ -3,6 +3,62 @@ Lilygo T-display S3 running ESPHome using patched tft_espi
 
 ![](https://github.com/landonr/lilygo-tdisplays3-esphome/blob/main/IMG_4200.jpg?raw=true)
 
+## Setup
+```
+esphome:
+  name: s3
+  libraries:
+    - SPI
+    - FS
+    - SPIFFS
+    - tdisplays3=https://github.com/landonr/lilygo-tdisplays3-esphome.git
+
+external_components:
+  - source: github://landonr/lilygo-tdisplays3-esphome
+    components: [tdisplays3]
+
+esp32:
+  board: esp32-s3-devkitc-1
+  variant: esp32s3
+  framework:
+    type: arduino
+
+# Enable Home Assistant API
+api:
+
+ota:
+  password: "6ada29f6f41ce1685d29d406efd25fa4"
+
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_password
+
+time:
+  - platform: homeassistant
+    id: ha_time
+
+switch:
+  - platform: gpio
+    pin: GPIO38
+    name: "Backlight"
+    id: backlight
+    internal: true
+    restore_mode: RESTORE_DEFAULT_ON
+
+font:
+  - file: "gfonts://Roboto"
+    id: roboto
+    size: 30
+
+display:
+  - platform: tdisplays3
+    id: disp
+    update_interval: 1s
+    rotation: 270
+    lambda: |-
+      it.printf(20, 70, id(roboto), Color(255, 0, 0), id(ha_time).now().strftime("%Y-%m-%d %H:%M:%S").c_str());
+```
+
 ## Installation
 You will first need to do a manual installation by putting the s3.yaml file into your esphome folder then using the modern format in ESPHome to get a local copy of the firmware and finally use https://web.esphome.io/ to install over USB.
 
@@ -19,40 +75,4 @@ When the board has connected, click "install" and select the firmware that you h
 
 When the firmware has been written to the board you will need to unplug and reconnect the USB cable.
 
-## Expanding on this for use in Home Assistant
-In a file editor, you will need to move the line ```TFT_eSPI tft = TFT_eSPI();``` from the Private: section at the bottom of /esphome/tdisplays3/tft_espi_display.h
-And move it to under the Public section towards the top of the file as so:
-
-	double barSize = 0;
-	public:
-	TFT_eSPI tft = TFT_eSPI();
-	std::string time = "init";}
-
-Then save the file. The next time you edit / compile and upload to the S3 board it will expose the tft class to esphome. You can then just use the standard tft_espi drawing functions (not the typical esphome "display:" section / drawing components). (Thanks  @jamesarm97)
-
-To diplay a string of text from a text sensor add the sensor to your s3.yaml (make sure to edit the entity to match your own setup):
-
-```
-text_sensor:
-  - platform: homeassistant
-    id: kitchenmusictrack
-    entity_id: media_player.kitchen_display
-    attribute: media_title
-  - platform: homeassistant
-    id: kitchenmusicartist
-    entity_id: media_player.kitchen_display
-    attribute: media_artist
-```
-
-And amend your s3.yaml file to call these in the lambda script:
-```
-interval:
-  - interval: 1s
-    then:
-    - lambda: |-
-        displayControllerComponent->clear();
-        displayControllerComponent->tft.setFreeFont(FMB12);
-        displayControllerComponent->tft.drawString(id(kitchenmusicartist).state.c_str(),10,105);
-        displayControllerComponent->tft.drawString(id(kitchenmusictrack).state.c_str(),10,125);
-```
-Save the s3.yaml file, create another Modern Format firmware, put the board into flash mode upload, the code and finally unplug and re-connect the USB cable. Assuming you have used the correct credentials, you can now power the T-Display and as long as it is in Wifi range of your router, will display the (in the case of this example) Artist and Title of the song playing on the media player.
+After that you can upload firmwares using WIFI without repeating this process
