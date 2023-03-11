@@ -28,6 +28,11 @@ CONFIG_SCHEMA = cv.All(
 )
 
 async def to_code(config):
+    cg.add_library("SPI", None)
+    cg.add_library("FS", None)
+    cg.add_library("SPIFFS", None)
+    cg.add_library("https://github.com/landonr/lilygo-tdisplays3-esphome.git", None)
+
     var = cg.new_Pvariable(config[CONF_ID])
     await cg.register_component(var, config)
     await display.register_display(var, config)

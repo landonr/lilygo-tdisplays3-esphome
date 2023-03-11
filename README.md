@@ -7,11 +7,6 @@ Lilygo T-display S3 (ST7789) running ESPHome using patched tft_espi
 ```
 esphome:
   name: s3
-  libraries:
-    - SPI
-    - FS
-    - SPIFFS
-    - tdisplays3=https://github.com/landonr/lilygo-tdisplays3-esphome.git
 
 external_components:
   - source: github://landonr/lilygo-tdisplays3-esphome
@@ -60,10 +55,10 @@ display:
 ```
 
 ## Installation
-You will first need to do a manual installation by putting the s3.yaml file into your esphome folder then using the modern format in ESPHome to get a local copy of the firmware and finally use https://web.esphome.io/ to install over USB.
+You will first need to do a manual installation by putting the example.yaml file into your esphome folder then using the modern format in ESPHome to get a local copy of the firmware and finally use https://web.esphome.io/ to install over USB.
 
 ### Method
-Download a copy of this code and place the tdisplays3 folder in your esphome folder. Also place the s3.yaml and secrets.yaml into the esphome folder, ensuring to change the s3.yaml api and secrets.yaml details to your own credentials.
+Download a copy of this code and place the tdisplays3 folder in your esphome folder. Also place the example.yaml and secrets.yaml into the esphome folder, ensuring to change the example.yaml api and secrets.yaml details to your own credentials.
 
 From your ESPHome dashboard, create a local copy of the s3 firmware by clicking the three dots > Install > Manual Download > Modern Format
 
