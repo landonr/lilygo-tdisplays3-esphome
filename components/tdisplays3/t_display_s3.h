@@ -20,6 +20,7 @@ class TDisplayS3 : public PollingComponent,
   public:
     void setup() override {
         tft.init();
+        spr.createSprite(get_width_internal(), get_height_internal());
         tft.fillScreen(TFT_BLACK);
     }
 
@@ -30,7 +31,7 @@ class TDisplayS3 : public PollingComponent,
     // DisplayBuffer methods
     //////////
     void fill(Color color) override {
-        tft.fillScreen(display::ColorUtil::color_to_565(color));
+        spr.fillScreen(display::ColorUtil::color_to_565(color));
     }
 
     int get_width_internal() override {
@@ -46,7 +47,7 @@ class TDisplayS3 : public PollingComponent,
     }
 
     void draw_absolute_pixel_internal(int x, int y, Color color) override {
-        tft.drawPixel(x, y, display::ColorUtil::color_to_565(color));
+        spr.drawPixel(x, y, display::ColorUtil::color_to_565(color));
     }
 
     /////////////
@@ -54,10 +55,12 @@ class TDisplayS3 : public PollingComponent,
     /////////////
     void update() override {
         this->do_update_();
+        spr.pushSprite(0, 0);
     }
 
   private:
     TFT_eSPI tft = TFT_eSPI();
+    TFT_eSprite spr = TFT_eSprite(&tft);
 };
 
 }  // namespace tdisplays3

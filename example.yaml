@@ -1,10 +1,5 @@
 esphome:
   name: s3
-  libraries:
-    - SPI
-    - FS
-    - SPIFFS
-    - tdisplays3=https://github.com/landonr/lilygo-tdisplays3-esphome.git
 
 external_components:
   - source: github://landonr/lilygo-tdisplays3-esphome
