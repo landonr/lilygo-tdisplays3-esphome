@@ -58,7 +58,8 @@ class TDisplayS3 : public PollingComponent,
         spr.pushSprite(0, 0);
     }
 
-  private:
+    // Commented the private line so these will be public and usable in ESPHome Lambdas
+  //private:
     TFT_eSPI tft = TFT_eSPI();
     TFT_eSprite spr = TFT_eSprite(&tft);
 };
