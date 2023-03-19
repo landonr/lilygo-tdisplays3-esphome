@@ -24,8 +24,6 @@ esphome:
 
   platformio_options:
     build_flags:
-      - -DBRADTESTFLAG=1
-
   #     # The folowing defines will configure the TFT display driver, size and pins
       - -DUSER_SETUP_LOADED=1 
       - -DST7789_DRIVER=1 
