@@ -1,29 +1,41 @@
 esphome:
-  name: tdisplay-displaypages
-  friendly_name: tdisplay-displaypages
+  name: "tdisplays3-displaypages"
+  friendly_name: "tdisplays3-displaypages"
 
   on_boot: 
     - priority: 600
       then:
         - lambda: |-
-            id(disp).tft.init();
+            //id(disp).tft.init();
+            // Set the rotation here, not on the component
             id(disp).tft.setRotation(3);
+
+            // Fetch driver details from TFT_eSPI and push into ESPHome sensors
             setup_t tftSetup;
             id(disp).tft.getSetup(tftSetup);            
             id(TFT_eSPI_Version).publish_state(tftSetup.version.c_str());
+            int iTFTDriver = tftSetup.tft_driver;
+            id(TFT_eSPI_Driver).publish_state(((String)iTFTDriver).c_str());
+            if(tftSetup.serial == 1) {
+              id(TFT_eSPI_Interface).publish_state("Serial");
+            }
+            else {
+              id(TFT_eSPI_Interface).publish_state("8-bit Parallel");
+            }
+          # Display the startup screen while waiting for Wifi
         - script.execute: DisplayStartupPage
 
   platformio_options:
-    upload_speed: 921600
     build_flags:
-      # The folowing defines will configure the TFT display driver, size and pins
+      # The folowing defines will configure the TFT display driver, size and pins.  These are necessary to use an unpatched TFT_eSPI library
       - -DUSER_SETUP_LOADED=1 
       - -DST7789_DRIVER=1 
       - -DINIT_SEQUENCE_3=1 
       - -DCGRAM_OFFSET
       - -DTFT_RGB_ORDER=TFT_RGB 
       - -DTFT_INVERSION_ON=1 
-      - -DTFT_PARALLEL_8_BIT=1 
+      - -DTFT_PARALLEL_8_BIT=1
+      # Yes, this seems backwards but works
       - -DTFT_WIDTH=170 
       - -DTFT_HEIGHT=320 
       - -DTFT_DC=7 
@@ -57,7 +69,8 @@ external_components:
       url: https://github.com/bradmck/lilygo-tdisplays3-esphome.git
       ref: main
     components: [tdisplays3]
-
+    refresh: 0s
+    
 esp32:
   board: esp32-s3-devkitc-1
   variant: esp32s3
@@ -104,6 +117,14 @@ text_sensor:
   - platform: template
     name: "TFT_eSPI Version"
     id: TFT_eSPI_Version
+  - platform: template
+    name: "TFT_eSPI Interface"
+    id: TFT_eSPI_Interface
+    entity_category: diagnostic
+  - platform: template
+    name: "TFT_eSPI Driver"
+    id: TFT_eSPI_Driver
+    entity_category: diagnostic
 
 binary_sensor:
   # GPIO0 will restart the script that is switching pages
