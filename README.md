@@ -6,7 +6,6 @@ Lilygo T-display S3 (ST7789) running ESPHome using patched tft_espi
 ## Contributions
 - [@fisheradam](https://github.com/fisheradam) Docs
 - [@guillempages](https://github.com/guillempages) external component, sprites, touch support
-- [@bradmck](https://github.com/bradmck) load tft_espi on build
 
 ## Setup
 ```
