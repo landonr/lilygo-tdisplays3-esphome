@@ -36,7 +36,7 @@ async def to_code(config):
     cg.add_build_flag("-DCGRAM_OFFSET")
     cg.add_build_flag("-DTFT_RGB_ORDER=TFT_RGB")
     cg.add_build_flag("-DTFT_INVERSION_ON")
-    cg.add_build_flag("-DTFT_PARALLEL_8_BIT=1")
+    cg.add_build_flag("-DTFT_PARALLEL_8_BIT")
     cg.add_build_flag("-DTFT_WIDTH=170")
     cg.add_build_flag("-DTFT_HEIGHT=320")
     cg.add_build_flag("-DTFT_DC=7")
