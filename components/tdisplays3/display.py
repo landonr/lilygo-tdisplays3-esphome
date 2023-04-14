@@ -51,7 +51,6 @@ async def to_code(config):
     cg.add_build_flag("-DTFT_D5=46")
     cg.add_build_flag("-DTFT_D6=47")
     cg.add_build_flag("-DTFT_D7=48")
-    cg.add_build_flag("-DLOAD_GLCD=1")
     # If you don't care about control of the backlight you can uncomment the two lines below")
     #cg.add_build_flag("-DTFT_BL=38")
     #cg.add_build_flag("-DTFT_BACKLIGHT_ON=HIGH")
