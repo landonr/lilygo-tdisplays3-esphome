@@ -31,7 +31,7 @@ async def to_code(config):
     # Add platformio build_flags for the correct TFT_eSPI settings for the T-Display-S3
     # This allows using current, unpatched versions of TFT_eSPI
     cg.add_build_flag("-DUSER_SETUP_LOADED=1")
-    cg.add_build_flag("-DST7789_DRIVER=1")
+    cg.add_build_flag("-DST7789_DRIVER")
     cg.add_build_flag("-DINIT_SEQUENCE_3=1")
     cg.add_build_flag("-DCGRAM_OFFSET")
     cg.add_build_flag("-DTFT_RGB_ORDER=TFT_RGB")
