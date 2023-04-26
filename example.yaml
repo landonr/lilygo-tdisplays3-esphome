@@ -33,13 +33,26 @@ time:
   - platform: homeassistant
     id: ha_time
 
-switch:
-  - platform: gpio
+output:
+  - platform: ledc
     pin: GPIO38
+    id: gpio38
+    frequency: 2000
+
+light:
+  - platform: monochromatic
+    output: gpio38
     name: "Backlight"
-    id: backlight
-    internal: true
     restore_mode: RESTORE_DEFAULT_ON
+
+# You can either setup the backlight as a switch like below or make it dimmable using a light output like above
+# switch:
+#   - platform: gpio
+#     pin: GPIO38
+#     name: "Backlight"
+#     id: backlight
+#     internal: true
+#     restore_mode: RESTORE_DEFAULT_ON
 
 font:
   - file: "gfonts://Roboto"
