@@ -1,5 +1,11 @@
 esphome:
   name: s3
+  platformio_options:
+    upload_speed: 2000000
+    board_build.f_flash: 80000000L
+    board_upload.flash_size: 16MB
+    board_build.partitions: default_16MB.csv
+    board_build.arduino.memory_type: qio_opi
 
 external_components:
   - source: github://bradmck/lilygo-tdisplays3-esphome
@@ -32,6 +38,18 @@ wifi:
 time:
   - platform: homeassistant
     id: ha_time
+
+binary_sensor:
+  - platform: gpio
+    pin: 
+      number: GPIO0
+      inverted: true
+    name: "Button 1"
+  - platform: gpio
+    pin: 
+      number: GPIO14
+      inverted: true
+    name: "Button 2"
 
 output:
   - platform: ledc
