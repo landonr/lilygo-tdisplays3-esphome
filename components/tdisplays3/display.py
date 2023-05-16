@@ -74,7 +74,7 @@ async def to_code(config):
             cg.add_library("SPIFFS", None)
     
     # TODO:
-    # define PIN_POWER_ON 15
+    # PIN_POWER_ON 15
     # Bat_Volt  4
     # Touch_reset 21
 
@@ -85,7 +85,6 @@ async def to_code(config):
     # SPI library can be removed if <https://github.com/Bodmer/TFT_eSPI/pull/2657> is merged.
     cg.add_library("SPI", None)
     cg.add_library("TFT_eSPI", None)
-    # cg.add_library("file:///home/fabian/Repos/Bodmer/TFT_eSPI/", None)
 
     var = cg.new_Pvariable(config[CONF_ID])
     await cg.register_component(var, config)
