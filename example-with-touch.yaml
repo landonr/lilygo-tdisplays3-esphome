@@ -8,7 +8,7 @@ esphome:
     board_build.arduino.memory_type: qio_opi
 
 external_components:
-  - source: github://bradmck/lilygo-tdisplays3-esphome
+  - source: github://landonr/lilygo-tdisplays3-esphome
     components: [tdisplays3]
 
 esp32:
