@@ -29,6 +29,10 @@ int TDisplayS3::get_height_internal() { return tft.getViewportHeight(); }
 display::DisplayType TDisplayS3::get_display_type() { return display::DisplayType::DISPLAY_TYPE_COLOR; }
 
 void TDisplayS3::draw_absolute_pixel_internal(int x, int y, Color color) {
+  // TODO: Performance optimization.
+  // Currently every pixel is individually send to display. A full update via `it.filled_rectangle(0, 0, 320, 170,
+  // Color(255, 0, 0));` takes ~180ms. Alternative is to build framebuffer and send data as block (using `setWindow`
+  // and `tft_Write_16`).
   tft.drawPixel(x, y, display::ColorUtil::color_to_565(color));
 }
 
