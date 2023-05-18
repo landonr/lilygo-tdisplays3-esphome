@@ -1,6 +1,7 @@
 #include "t_display_s3.h"
 
 #include "esphome/components/display/display_color_utils.h"
+#include "esphome/core/log.h"
 
 namespace esphome {
 namespace tdisplays3 {
@@ -10,6 +11,11 @@ static const char *const TAG = "TDisplayS3";
 void TDisplayS3::setup() {
   tft.init();
   tft.fillScreen(TFT_BLACK);
+}
+
+void TDisplayS3::dump_config() {
+  LOG_DISPLAY("", "T-Display S3 (ST7789)", this);
+  LOG_UPDATE_INTERVAL(this);
 }
 
 void TDisplayS3::loop() {}

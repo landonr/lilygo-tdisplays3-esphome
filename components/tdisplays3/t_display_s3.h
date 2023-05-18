@@ -3,14 +3,15 @@
 #include "esphome/core/defines.h"
 #include "TFT_eSPI.h"
 
-#include "esphome/core/component.h"
 #include "esphome/components/display/display_buffer.h"
+#include "esphome/core/component.h"
 
 namespace esphome {
 namespace tdisplays3 {
 
 class TDisplayS3 : public PollingComponent, public display::DisplayBuffer {
  public:
+  void dump_config() override;
   void setup() override;
   void loop() override;
 
