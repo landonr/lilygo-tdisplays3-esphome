@@ -16,15 +16,16 @@ class TDisplayS3 : public PollingComponent, public display::DisplayBuffer {
   void loop() override;
 
   void fill(Color color) override;
-  int get_width_internal() override;
-  int get_height_internal() override;
-  display::DisplayType get_display_type() override;
+  int get_width_internal() override { return this->tft_->getViewportWidth(); }
+  int get_height_internal() override { return this->tft_->getViewportHeight(); }
+  display::DisplayType get_display_type() override { return display::DisplayType::DISPLAY_TYPE_COLOR; }
   void draw_absolute_pixel_internal(int x, int y, Color color) override;
 
   void update() override;
 
  private:
-  TFT_eSPI tft = TFT_eSPI();
+  TFT_eSPI *tft_{nullptr};
+  TFT_eSprite *spr_{nullptr};
 };
 
 }  // namespace tdisplays3

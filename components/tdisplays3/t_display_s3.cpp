@@ -9,8 +9,14 @@ namespace tdisplays3 {
 static const char *const TAG = "TDisplayS3";
 
 void TDisplayS3::setup() {
-  tft.init();
-  tft.fillScreen(TFT_BLACK);
+  this->tft_ = new TFT_eSPI();
+  this->tft_->init();
+  this->tft_->fillScreen(TFT_BLACK);
+
+  this->spr_ = new TFT_eSprite(this->tft_);
+  if (this->spr_->createSprite(get_width_internal(), get_height_internal()) == nullptr) {
+    this->mark_failed();
+  }
 }
 
 void TDisplayS3::dump_config() {
@@ -20,23 +26,16 @@ void TDisplayS3::dump_config() {
 
 void TDisplayS3::loop() {}
 
-void TDisplayS3::fill(Color color) { tft.fillScreen(display::ColorUtil::color_to_565(color)); }
-
-int TDisplayS3::get_width_internal() { return tft.getViewportWidth(); }
-
-int TDisplayS3::get_height_internal() { return tft.getViewportHeight(); }
-
-display::DisplayType TDisplayS3::get_display_type() { return display::DisplayType::DISPLAY_TYPE_COLOR; }
+void TDisplayS3::fill(Color color) { this->spr_->fillScreen(display::ColorUtil::color_to_565(color)); }
 
 void TDisplayS3::draw_absolute_pixel_internal(int x, int y, Color color) {
-  // TODO: Performance optimization.
-  // Currently every pixel is individually send to display. A full update via `it.filled_rectangle(0, 0, 320, 170,
-  // Color(255, 0, 0));` takes ~180ms. Alternative is to build framebuffer and send data as block (using `setWindow`
-  // and `tft_Write_16`).
-  tft.drawPixel(x, y, display::ColorUtil::color_to_565(color));
+  this->spr_->drawPixel(x, y, display::ColorUtil::color_to_565(color));
 }
 
-void TDisplayS3::update() { this->do_update_(); }
+void TDisplayS3::update() {
+  this->do_update_();
+  this->spr_->pushSprite(0, 0);
+}
 
 }  // namespace tdisplays3
 }  // namespace esphome
