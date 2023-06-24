@@ -60,7 +60,7 @@ async def to_code(config):
     cg.add_build_flag("-DTFT_D6=47")
     cg.add_build_flag("-DTFT_D7=48")
 
-    if CONF_LOAD_FONTS in config and config[CONF_LOAD_FONTS]:
+    if config[CONF_LOAD_FONTS]:
         cg.add_build_flag("-DLOAD_GLCD")
         cg.add_build_flag("-DLOAD_FONT2")
         cg.add_build_flag("-DLOAD_FONT4")
@@ -68,17 +68,18 @@ async def to_code(config):
         cg.add_build_flag("-DLOAD_FONT7")
         cg.add_build_flag("-DLOAD_FONT8")
         cg.add_build_flag("-DLOAD_GFXFF")
-        if CONF_LOAD_SMOOTH_FONTS in config and config[CONF_LOAD_SMOOTH_FONTS]:
-            cg.add_build_flag("-DSMOOTH_FONT")
-            cg.add_library("FS", None)
-            cg.add_library("SPIFFS", None)
+    
+    if config[CONF_LOAD_SMOOTH_FONTS]:
+        cg.add_build_flag("-DSMOOTH_FONT")
+        cg.add_library("FS", None)
+        cg.add_library("SPIFFS", None)
     
     # TODO:
     # PIN_POWER_ON 15
     # Bat_Volt  4
     # Touch_reset 21
 
-    if CONF_BACKLIGHT in config and config[CONF_BACKLIGHT]:
+    if config[CONF_BACKLIGHT]:
         cg.add_build_flag("-DTFT_BL=38")
         cg.add_build_flag("-DTFT_BACKLIGHT_ON=HIGH")
 

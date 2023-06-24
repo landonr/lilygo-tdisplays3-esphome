@@ -24,8 +24,6 @@ void TDisplayS3::dump_config() {
   LOG_UPDATE_INTERVAL(this);
 }
 
-void TDisplayS3::loop() {}
-
 void TDisplayS3::fill(Color color) { this->spr_->fillScreen(display::ColorUtil::color_to_565(color)); }
 
 void TDisplayS3::draw_absolute_pixel_internal(int x, int y, Color color) {

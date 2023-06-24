@@ -13,7 +13,6 @@ class TDisplayS3 : public PollingComponent, public display::DisplayBuffer {
  public:
   void dump_config() override;
   void setup() override;
-  void loop() override;
 
   void fill(Color color) override;
   int get_width_internal() override { return this->tft_->getViewportWidth(); }
