@@ -107,4 +107,4 @@ touchscreen:
            id(my_touchscreen).x,
            id(my_touchscreen).y
          );
-      - switch.toggle: backlight
+      # - switch.toggle: backlight
