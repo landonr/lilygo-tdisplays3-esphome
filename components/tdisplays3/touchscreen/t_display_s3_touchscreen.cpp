@@ -110,11 +110,11 @@ void LilygoTDisplayS3Touchscreen::loop() {
   tp.x += this->x_offset_;
   tp.y += this->y_offset_;
 
-  this->x=tp.x;
-  this->y=tp.y;
+  this->x = tp.x;
+  this->y = tp.y;
   if (point == 0) {
-     ESP_LOGV(TAG, "Touch detected at (%d, %d). State: %d", tp.x, tp.y, tp.state);
-     this->defer([this, tp]() { this->send_touch_(tp); });
+    ESP_LOGV(TAG, "Touch detected at (%d, %d). State: %d", tp.x, tp.y, tp.state);
+    this->defer([this, tp]() { this->send_touch_(tp); });
   } else {
     for (auto *listener : this->touch_listeners_)
       listener->release();
