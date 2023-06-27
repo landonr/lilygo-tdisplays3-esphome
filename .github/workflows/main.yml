@@ -16,7 +16,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        devices: [ 's3' ]
+        devices: [ 'example', 'example-with-touch' ]
     steps:
       - uses: actions/checkout@v2
       - uses: esphome/build-action@v1.1.0
