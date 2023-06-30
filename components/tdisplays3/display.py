@@ -16,6 +16,7 @@ AUTO_LOAD = ["psram"]
 CONF_BACKLIGHT = "backlight"
 CONF_LOAD_FONTS = "load_fonts"
 CONF_LOAD_SMOOTH_FONTS = "load_smooth_fonts"
+CONF_DISABLE_ALL_LIBRARY_WARNINGS = "disable_all_library_warnings"
 
 TDISPLAYS3 = tdisplays3_ns.class_(
     "TDisplayS3", cg.PollingComponent, display.DisplayBuffer
@@ -30,6 +31,7 @@ CONFIG_SCHEMA = cv.All(
             cv.Optional(CONF_BACKLIGHT, default=False): cv.boolean,
             cv.Optional(CONF_LOAD_FONTS, default=False): cv.boolean,
             cv.Optional(CONF_LOAD_SMOOTH_FONTS, default=False): cv.boolean,
+            cv.Optional(CONF_DISABLE_ALL_LIBRARY_WARNINGS, default=False): cv.boolean,
         }
     ).extend(cv.polling_component_schema("5s")),
 )
@@ -73,6 +75,9 @@ async def to_code(config):
         cg.add_build_flag("-DSMOOTH_FONT")
         cg.add_library("FS", None)
         cg.add_library("SPIFFS", None)
+    
+    if config[CONF_DISABLE_ALL_LIBRARY_WARNINGS]:
+        cg.add_build_flag("-DDISABLE_ALL_LIBRARY_WARNINGS")
     
     # TODO:
     # PIN_POWER_ON 15
