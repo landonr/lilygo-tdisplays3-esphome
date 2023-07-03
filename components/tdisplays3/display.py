@@ -104,6 +104,7 @@ async def to_code(config):
     var = cg.new_Pvariable(config[CONF_ID])
     await cg.register_component(var, config)
     await display.register_display(var, config)
+    cg.add(var.set_dimensions(config[CONF_WIDTH], config[CONF_HEIGHT]));
 
     if CONF_LAMBDA in config:
         lambda_ = await cg.process_lambda(
