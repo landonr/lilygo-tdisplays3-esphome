@@ -30,9 +30,30 @@ void TDisplayS3::draw_absolute_pixel_internal(int x, int y, Color color) {
   this->spr_->drawPixel(x, y, display::ColorUtil::color_to_565(color));
 }
 
+int TDisplayS3::get_width_internal() {
+  if (this->tft_) {
+    return this->tft_->getViewportWidth();
+  } else {
+    return this->width_;
+  }
+}
+
+int TDisplayS3::get_height_internal() {
+  if (this->tft_) {
+    return this->tft_->getViewportHeight();
+  } else {
+    return this->height_;
+  }
+}
+
 void TDisplayS3::update() {
   this->do_update_();
   this->spr_->pushSprite(0, 0);
+}
+
+void TDisplayS3::set_dimensions(uint16_t width, uint16_t height) {
+  this->width_ = width;
+  this->height_ = height;
 }
 
 }  // namespace tdisplays3
