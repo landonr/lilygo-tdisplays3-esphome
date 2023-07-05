@@ -21,6 +21,7 @@ DEPENDENCIES = ["esp32"]
 CONF_BACKLIGHT = "backlight"
 CONF_LOAD_FONTS = "load_fonts"
 CONF_LOAD_SMOOTH_FONTS = "load_smooth_fonts"
+CONF_ENABLE_LIBRARY_WARNINGS = "enable_library_warnings"
 
 TDISPLAYS3 = tdisplays3_ns.class_(
     "TDisplayS3", cg.PollingComponent, display.DisplayBuffer
@@ -35,6 +36,7 @@ CONFIG_SCHEMA = cv.All(
             cv.Optional(CONF_BACKLIGHT, default=False): cv.boolean,
             cv.Optional(CONF_LOAD_FONTS, default=False): cv.boolean,
             cv.Optional(CONF_LOAD_SMOOTH_FONTS, default=False): cv.boolean,
+            cv.Optional(CONF_ENABLE_LIBRARY_WARNINGS, default=False): cv.boolean,
             cv.Optional(CONF_RESET_PIN, default=5): pins.gpio_output_pin_schema,
             cv.Optional(CONF_CS_PIN, default=6): pins.gpio_output_pin_schema,
             cv.Optional(CONF_DC_PIN, default=7): pins.gpio_output_pin_schema,
@@ -82,6 +84,9 @@ async def to_code(config):
         cg.add_build_flag("-DSMOOTH_FONT")
         cg.add_library("FS", None)
         cg.add_library("SPIFFS", None)
+
+    if not config[CONF_ENABLE_LIBRARY_WARNINGS]:
+        cg.add_build_flag("-DDISABLE_ALL_LIBRARY_WARNINGS")
 
     # TODO:
     # PIN_POWER_ON 15
