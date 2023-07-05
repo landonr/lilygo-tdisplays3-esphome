@@ -19,6 +19,12 @@ jobs:
         devices: [ 'example', 'example-with-touch' ]
     steps:
       - uses: actions/checkout@v2
+      - uses: DoozyX/clang-format-lint-action@v0.16.2
+        with:
+          source: '.'
+          extensions: 'h,cpp'
+          style: file
+          clangFormatVersion: 16
       - uses: esphome/build-action@v1.1.0
         with:
           yaml_file: ${{ matrix.devices }}.yaml
