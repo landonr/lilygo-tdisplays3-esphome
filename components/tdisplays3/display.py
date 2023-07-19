@@ -13,6 +13,7 @@ from esphome.const import (
     CONF_RESET_PIN,
     CONF_NUMBER,
 )
+from esphome.const import __version__ as ESPHOME_VERSION
 from . import tdisplays3_ns
 
 AUTO_LOAD = ["psram"]
@@ -107,7 +108,11 @@ async def to_code(config):
     cg.add(var.set_dimensions(config[CONF_WIDTH], config[CONF_HEIGHT]));
 
     if CONF_LAMBDA in config:
+        if cv.Version.parse(ESPHOME_VERSION) < cv.Version.parse("2023.7.0"):
+            displayRef = display.DisplayBufferRef
+        else:
+            displayRef = display.DisplayRef
         lambda_ = await cg.process_lambda(
-            config[CONF_LAMBDA], [(display.DisplayBufferRef, "it")], return_type=cg.void
+            config[CONF_LAMBDA], [(displayRef, "it")], return_type=cg.void
         )
         cg.add(var.set_writer(lambda_))
