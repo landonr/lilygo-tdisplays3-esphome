@@ -98,8 +98,6 @@ async def to_code(config):
         cg.add_build_flag("-DTFT_BL=38")
         cg.add_build_flag("-DTFT_BACKLIGHT_ON=HIGH")
 
-    # SPI library can be removed if <https://github.com/Bodmer/TFT_eSPI/pull/2657> is merged.
-    cg.add_library("SPI", None)
     cg.add_library("TFT_eSPI", None)
 
     var = cg.new_Pvariable(config[CONF_ID])
