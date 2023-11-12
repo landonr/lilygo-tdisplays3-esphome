@@ -58,9 +58,11 @@ async def to_code(config):
     cg.add_build_flag("-DTFT_PARALLEL_8_BIT")
     cg.add_build_flag(f"-DTFT_WIDTH={config[CONF_WIDTH]}")
     cg.add_build_flag(f"-DTFT_HEIGHT={config[CONF_HEIGHT]}")
+
     cg.add_build_flag(f"-DTFT_RST={config[CONF_RESET_PIN][CONF_NUMBER]}")
     cg.add_build_flag(f"-DTFT_CS={config[CONF_CS_PIN][CONF_NUMBER]}")
     cg.add_build_flag(f"-DTFT_DC={config[CONF_DC_PIN][CONF_NUMBER]}")
+
     cg.add_build_flag("-DTFT_WR=8")
     cg.add_build_flag("-DTFT_RD=9")
     cg.add_build_flag("-DTFT_D0=39")
@@ -99,6 +101,7 @@ async def to_code(config):
         cg.add_build_flag("-DTFT_BACKLIGHT_ON=HIGH")
 
     cg.add_library("TFT_eSPI", None)
+    #cg.add_library("SPI", None)
 
     var = cg.new_Pvariable(config[CONF_ID])
     await cg.register_component(var, config)
