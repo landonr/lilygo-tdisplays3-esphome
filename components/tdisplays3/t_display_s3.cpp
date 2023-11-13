@@ -11,7 +11,6 @@ static const char *const TAG = "TDisplayS3";
 void TDisplayS3::setup() {
   this->tft_ = new TFT_eSPI();
   this->tft_->init();
-  //this->tft_->initDMA(false);
 
   //Set the roptation on the TFT driver, instead of the intertal display modules.
   switch (this->get_rotation())
@@ -30,8 +29,7 @@ void TDisplayS3::setup() {
     }
   this->set_rotation(esphome::display::DisplayRotation::DISPLAY_ROTATION_0_DEGREES);
 
-
-  this->tft_->fillScreen(TFT_WHITE);
+  this->tft_->fillScreen(TFT_BLACK);
 
   this->spr_ = new TFT_eSprite(this->tft_);
   this->buffer_ = (uint8_t*) this->spr_->createSprite(get_width_internal(), get_height_internal());

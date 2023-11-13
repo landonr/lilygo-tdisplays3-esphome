@@ -31,6 +31,7 @@ class LilygoTDisplayS3Touchscreen : public touchscreen::Touchscreen, public Comp
 
   int16_t x;
   int16_t y;
+  
 
  protected:
   InternalGPIOPin *interrupt_pin_;
