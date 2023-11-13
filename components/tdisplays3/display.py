@@ -74,6 +74,8 @@ async def to_code(config):
     cg.add_build_flag("-DTFT_D6=47")
     cg.add_build_flag("-DTFT_D7=48")
 
+    cg.add_build_flag("-DSPI_FREQUENCY=40000000")
+
     if config[CONF_LOAD_FONTS]:
         cg.add_build_flag("-DLOAD_GLCD")
         cg.add_build_flag("-DLOAD_FONT2")
