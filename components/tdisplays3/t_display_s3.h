@@ -20,6 +20,8 @@ class TDisplayS3 : public PollingComponent, public display::DisplayBuffer {
   display::DisplayType get_display_type() override { return display::DisplayType::DISPLAY_TYPE_COLOR; }
   void draw_absolute_pixel_internal(int x, int y, Color color) override;
 
+  float get_setup_priority() const override { return esphome::setup_priority::HARDWARE; };
+
   void update() override;
   void updateArea(int16_t x1, int16_t y1, int16_t x2, int16_t y2, uint16_t *buffer, void (*ready_callback)(void)) override;  
   void set_dimensions(uint16_t width, uint16_t height);
