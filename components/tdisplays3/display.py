@@ -23,6 +23,8 @@ CONF_BACKLIGHT = "backlight"
 CONF_LOAD_FONTS = "load_fonts"
 CONF_LOAD_SMOOTH_FONTS = "load_smooth_fonts"
 CONF_ENABLE_LIBRARY_WARNINGS = "enable_library_warnings"
+CONF_USE_ASYNC_IO = "use_async_io"
+CONF_DISABLE_BUFFER="disable_buffer"
 
 TDISPLAYS3 = tdisplays3_ns.class_(
     "TDisplayS3", cg.PollingComponent, display.DisplayBuffer
@@ -41,6 +43,8 @@ CONFIG_SCHEMA = cv.All(
             cv.Optional(CONF_RESET_PIN, default=5): pins.gpio_output_pin_schema,
             cv.Optional(CONF_CS_PIN, default=6): pins.gpio_output_pin_schema,
             cv.Optional(CONF_DC_PIN, default=7): pins.gpio_output_pin_schema,
+            cv.Optional(CONF_USE_ASYNC_IO, default=False): cv.boolean,
+            cv.Optional(CONF_DISABLE_BUFFER, default=False): cv.boolean,
         }
     ).extend(cv.polling_component_schema("5s")),
 )
@@ -75,7 +79,6 @@ async def to_code(config):
     cg.add_build_flag("-DTFT_D7=48")
 
     cg.add_build_flag("-DSPI_FREQUENCY=40000000")
-
     if config[CONF_LOAD_FONTS]:
         cg.add_build_flag("-DLOAD_GLCD")
         cg.add_build_flag("-DLOAD_FONT2")
@@ -103,12 +106,18 @@ async def to_code(config):
         cg.add_build_flag("-DTFT_BACKLIGHT_ON=HIGH")
 
     cg.add_library("TFT_eSPI", None)
-    #cg.add_library("SPI", None)
 
     var = cg.new_Pvariable(config[CONF_ID])
     await cg.register_component(var, config)
     await display.register_display(var, config)
     cg.add(var.set_dimensions(config[CONF_WIDTH], config[CONF_HEIGHT]));
+
+    if CONF_USE_ASYNC_IO in config:
+        if config[CONF_USE_ASYNC_IO]:
+            cg.add_define("TDISPLAYS3_USE_ASYNC_IO")
+
+    if CONF_DISABLE_BUFFER in config:
+        cg.add(var.set_disable_buffer(config[CONF_DISABLE_BUFFER])) 
 
     if CONF_LAMBDA in config:
         if cv.Version.parse(ESPHOME_VERSION) < cv.Version.parse("2023.7.0"):

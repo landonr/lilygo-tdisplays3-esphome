@@ -8,6 +8,7 @@ namespace tdisplays3 {
 
 static const char *const TAG = "TDisplayS3";
 
+#ifdef TDISPLAYS3_USE_ASYNC_IO
 namespace writer_shim {
   static TaskHandle_t writeFrameTask_ = nullptr;
   static int16_t x1 = 0;
@@ -38,6 +39,7 @@ namespace writer_shim {
   }
 
   static void init(TFT_eSPI *tft) {
+    //xTaskCreatePinnedToCore(writer_shim::write_framebuffer_task, "frame_task", 8192, tft, 1, &writeFrameTask_, tskNO_AFFINITY);
     xTaskCreatePinnedToCore(writer_shim::write_framebuffer_task, "frame_task", 8192, tft, 1, &writeFrameTask_, 0);
   }
 
@@ -51,6 +53,8 @@ namespace writer_shim {
     xTaskNotifyGive(writer_shim::writeFrameTask_);
   }
 }
+
+#endif
 
 void TDisplayS3::setup() {
   this->tft_ = new TFT_eSPI();
@@ -75,30 +79,56 @@ void TDisplayS3::setup() {
 
   this->tft_->fillScreen(TFT_BLACK);
 
-  this->spr_ = new TFT_eSprite(this->tft_);
+  if (!this->disable_buffer_) {
+    //Create a sprite with the same dimensions as the display, with 2 frames (double buffering) if using multithreading
+    this->spr_ = new TFT_eSprite(this->tft_);
 
-  //Create a sprite with the same dimensions as the display, with 2 frames (double buffering) if using multithreading
-  this->buffer_ = (uint8_t*) this->spr_->createSprite(get_width_internal(), get_height_internal(), this->multithreading_ ? 2 : 1);
-
-  if (this->buffer_ == nullptr) {
-    this->mark_failed();
+#ifdef TDISPLAYS3_USE_ASYNC_IO
+    auto buffers = 2;
+#else
+    auto buffers = 1;
+#endif
+    this->buffer_ = (uint8_t*) this->spr_->createSprite(get_width_internal(), get_height_internal(), buffers);
+    if (this->buffer_ == nullptr) {
+      ESP_LOGE(TAG, "Not enough memory to create a screenbuffer!");
+      this->mark_failed();
+      return;
+    }
   }
-
+  
+#ifdef TDISPLAYS3_USE_ASYNC_IO
   // Create a task to write the framebuffer to the display, pinned to the second core.
-  if (this->multithreading_) {
-    writer_shim::init(this->tft_);
-  }
+  writer_shim::init(this->tft_);
+#endif
 }
 
 void TDisplayS3::dump_config() {
   LOG_DISPLAY("", "T-Display S3 (ST7789)", this);
+#ifdef TDISPLAYS3_USE_ASYNC_IO
+  ESP_LOGCONFIG(TAG, "Using Async IO");
+#else
+  ESP_LOGCONFIG(TAG, "NOT Using Async IO");
+#endif
   LOG_UPDATE_INTERVAL(this);
+
 }
 
-void TDisplayS3::fill(Color color) { this->spr_->fillScreen(display::ColorUtil::color_to_565(color)); }
+void TDisplayS3::fill(Color color) { 
+
+  if (this->disable_buffer_) {
+    this->tft_->fillScreen(display::ColorUtil::color_to_565(color));
+  } else {
+    this->spr_->fillScreen(display::ColorUtil::color_to_565(color)); 
+  }
+}
 
 void TDisplayS3::draw_absolute_pixel_internal(int x, int y, Color color) {
-  this->spr_->drawPixel(x, y, display::ColorUtil::color_to_565(color));
+
+  if (this->disable_buffer_) {
+    this->tft_->drawPixel(x, y, display::ColorUtil::color_to_565(color));
+  } else {
+    this->spr_->drawPixel(x, y, display::ColorUtil::color_to_565(color));
+  }
 }
 
 int TDisplayS3::get_width_internal() {
@@ -117,27 +147,29 @@ int TDisplayS3::get_height_internal() {
   }
 }
 
-void TDisplayS3::updateArea(int16_t x1, int16_t y1, int16_t x2, int16_t y2, uint16_t *buffer, void (*ready_callback)(void)){
+void TDisplayS3::updateArea(int16_t x1, int16_t y1, int16_t x2, int16_t y2, uint16_t *buffer, void (*ready_callback)(void)) {
 
-  if (this->multithreading_) {
+#ifdef TDISPLAYS3_USE_ASYNC_IO
     if (writer_shim::writeFrameTask_ == nullptr) {
       return;
     }    
     writer_shim::startWrite(x1, y1, x2, y2, buffer, ready_callback);
-  } else {
+#else
     this->tft_->pushImage(x1, y1, (x2 - x1) + 1, (y2 - y1) + 1, buffer);
    ready_callback();
-  }
+#endif
+
 }
 
 void TDisplayS3::update() {
   //Let lambdas draw their last stuff
   this->do_update_();
 
-  if (!this->multithreading_) {
-    this->spr_->pushSprite(0, 0);  
-    return;
-  } else {
+#ifdef TDISPLAYS3_USE_ASYNC_IO
+
+    if (this->disable_buffer_) {
+      return;
+    }
 
     //Grab and swap screen-buffers
     auto currentBuffer = this->buffer_;
@@ -148,7 +180,10 @@ void TDisplayS3::update() {
     }
 
     this->updateArea((int16_t) 0, (int16_t) 0, this->spr_->width(), this->spr_->height(), (uint16_t*) this->buffer_, nullptr);
-  }
+#else
+    this->spr_->pushSprite(0, 0);  
+#endif
+
 }
 
 void TDisplayS3::set_dimensions(uint16_t width, uint16_t height) {

@@ -22,16 +22,16 @@ class TDisplayS3 : public PollingComponent, public display::DisplayBuffer {
 
   void update() override;
   void updateArea(int16_t x1, int16_t y1, int16_t x2, int16_t y2, uint16_t *buffer, void (*ready_callback)(void)) override;  
-  
   void set_dimensions(uint16_t width, uint16_t height);
   
+  void set_disable_buffer(bool value) { this->disable_buffer_ = value; }
+
  private:
   TFT_eSPI *tft_{nullptr};
   TFT_eSprite *spr_{nullptr};
   uint16_t width_{0};
   uint16_t height_{0};
-  bool multithreading_{true};
-  
+  bool disable_buffer_{false};
 };
 
 }  // namespace tdisplays3
