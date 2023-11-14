@@ -30,8 +30,8 @@ class TDisplayS3 : public PollingComponent, public display::DisplayBuffer {
   TFT_eSprite *spr_{nullptr};
   uint16_t width_{0};
   uint16_t height_{0};
-  bool multithreading_{false};
-  TaskHandle_t writeFrameTask_ = nullptr;
+  bool multithreading_{true};
+  
 };
 
 }  // namespace tdisplays3

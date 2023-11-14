@@ -9,20 +9,21 @@ namespace tdisplays3 {
 static const char *const TAG = "TDisplayS3";
 
 namespace writer_shim {
+  static TaskHandle_t writeFrameTask_ = nullptr;
+  static int16_t x1 = 0;
+  static int16_t x2 = 0;
+  static int16_t y1 = 0;
+  static int16_t y2 = 0;
+  static uint16_t *buffer = nullptr;
+  static void (*callback)(void) = nullptr;
+
   // A background task used to write the framebuffer to the display
   static void write_framebuffer_task(void *pv_params) {
 
     auto tft = (TFT_eSPI *) pv_params;
 
     while (true) {
-
-      //Wait for notifications..
-      auto x1 = (int16_t) ulTaskNotifyTakeIndexed(0, pdTRUE, pdMS_TO_TICKS(200));
-      auto y1 = (int16_t) ulTaskNotifyTakeIndexed(1, pdTRUE, pdMS_TO_TICKS(200));
-      auto x2 = (int16_t) ulTaskNotifyTakeIndexed(2, pdTRUE, pdMS_TO_TICKS(200));
-      auto y2 = (int16_t) ulTaskNotifyTakeIndexed(3, pdTRUE, pdMS_TO_TICKS(200));
-      auto buffer = (uint16_t*) ulTaskNotifyTakeIndexed(4, pdTRUE, pdMS_TO_TICKS(200));
-      auto callback = (void (*)(void)) ulTaskNotifyTakeIndexed(5, pdTRUE, pdMS_TO_TICKS(200));
+      ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
 
       if (x1 == 0 && y1 == 0 && x2 == 0 && y2 == 0) {
         continue;
@@ -32,11 +33,24 @@ namespace writer_shim {
       tft->pushImage(x1, y1, (x2 - x1) + 1, (y2 - y1) + 1, buffer);
       
       //Notify we are done!
-      //callback();
+      callback();
     }
   }
-}
 
+  static void init(TFT_eSPI *tft) {
+    xTaskCreatePinnedToCore(writer_shim::write_framebuffer_task, "frame_task", 8192, tft, 1, &writeFrameTask_, 0);
+  }
+
+  static void startWrite(int16_t x1, int16_t y1, int16_t x2, int16_t y2, uint16_t *buffer, void (*ready_callback)(void)) {
+    writer_shim::x1 = x1;
+    writer_shim::x2 = x2;
+    writer_shim::y1 = y1;
+    writer_shim::y2 = y2;
+    writer_shim::buffer = buffer;
+    writer_shim::callback = ready_callback;
+    xTaskNotifyGive(writer_shim::writeFrameTask_);
+  }
+}
 
 void TDisplayS3::setup() {
   this->tft_ = new TFT_eSPI();
@@ -72,7 +86,7 @@ void TDisplayS3::setup() {
 
   // Create a task to write the framebuffer to the display, pinned to the second core.
   if (this->multithreading_) {
-    xTaskCreatePinnedToCore(writer_shim::write_framebuffer_task, "framebuffer_task", 8192, this->tft_, 1, &(this->writeFrameTask_), tskNO_AFFINITY);
+    writer_shim::init(this->tft_);
   }
 }
 
@@ -106,12 +120,10 @@ int TDisplayS3::get_height_internal() {
 void TDisplayS3::updateArea(int16_t x1, int16_t y1, int16_t x2, int16_t y2, uint16_t *buffer, void (*ready_callback)(void)){
 
   if (this->multithreading_) {
-    if (xTaskNotifyIndexed(this->writeFrameTask_, 0, (uint32_t) x1, eSetValueWithoutOverwrite) == pdFALSE) return;
-    if (xTaskNotifyIndexed(this->writeFrameTask_, 1, (uint32_t) y1, eSetValueWithoutOverwrite) == pdFALSE) return;
-    if (xTaskNotifyIndexed(this->writeFrameTask_, 2, (uint32_t) x2, eSetValueWithoutOverwrite) == pdFALSE) return;
-    if (xTaskNotifyIndexed(this->writeFrameTask_, 3, (uint32_t) y2, eSetValueWithoutOverwrite) == pdFALSE) return;
-    if (xTaskNotifyIndexed(this->writeFrameTask_, 4, (uint32_t) buffer, eSetValueWithoutOverwrite) == pdFALSE) return;
-    if (xTaskNotifyIndexed(this->writeFrameTask_, 5, (uint32_t) ready_callback, eSetValueWithoutOverwrite) == pdFALSE) return;
+    if (writer_shim::writeFrameTask_ == nullptr) {
+      return;
+    }    
+    writer_shim::startWrite(x1, y1, x2, y2, buffer, ready_callback);
   } else {
     this->tft_->pushImage(x1, y1, (x2 - x1) + 1, (y2 - y1) + 1, buffer);
    ready_callback();
