@@ -25,13 +25,12 @@ static const uint8_t WAKEUP_CMD[1] = {0x06};
 #define ERROR_CHECK(err) \
   if ((err) != i2c::ERROR_OK) { \
     ESP_LOGE(TAG, "Failed to communicate!"); \
-    this->status_set_warning(); \
     return; \
   }
 
 int16_t combine_h4l8(uint8_t high, uint8_t low) { return (high & 0x0F) << 8 | low; }
 
-void Store::gpio_intr(Store *store) { store->touch = true; }
+void IRAM_ATTR Store::gpio_intr(Store *store) { store->touch = true; }
 
 void LilygoTDisplayS3Touchscreen::setup() {
   ESP_LOGCONFIG(TAG, "Setting up Lilygo T-Display S3 Touchscreen...");
@@ -126,8 +125,6 @@ void LilygoTDisplayS3Touchscreen::loop() {
     for (auto *listener : this->touch_listeners_)
       listener->touch(tp);
   }
-
-  this->status_clear_warning();
 }
 
 void LilygoTDisplayS3Touchscreen::dump_config() {

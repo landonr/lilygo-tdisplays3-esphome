@@ -19,7 +19,7 @@ namespace writer_shim {
   static void (*callback)(void) = nullptr;
 
   // A background task used to write the framebuffer to the display
-  static void write_framebuffer_task(void *pv_params) {
+  static void IRAM_ATTR write_framebuffer_task(void *pv_params) {
 
     auto tft = (TFT_eSPI *) pv_params;
 
@@ -39,8 +39,9 @@ namespace writer_shim {
   }
 
   static void init(TFT_eSPI *tft) {
-    //xTaskCreatePinnedToCore(writer_shim::write_framebuffer_task, "frame_task", 8192, tft, 1, &writeFrameTask_, tskNO_AFFINITY);
-    xTaskCreatePinnedToCore(writer_shim::write_framebuffer_task, "frame_task", 8192, tft, 1, &writeFrameTask_, 0);
+    //The stacksize needed for this driver is about 724 bytes, but we need to be safe, so take some extra just to be sure..
+    //The task is also pinned to CPU core 0, with low priority (just above idle), to decouple writing and rendering.    
+    xTaskCreatePinnedToCore(writer_shim::write_framebuffer_task, "tft_drv", 1024, tft, 1, &writeFrameTask_, 0); //tskNO_AFFINITY
   }
 
   static void startWrite(int16_t x1, int16_t y1, int16_t x2, int16_t y2, uint16_t *buffer, void (*ready_callback)(void)) {
