@@ -28,12 +28,16 @@ class TDisplayS3 : public PollingComponent, public display::DisplayBuffer {
   
   void set_disable_buffer(bool value) { this->disable_buffer_ = value; }
 
+  void power_off();
+  void power_on();
+
  private:
   TFT_eSPI *tft_{nullptr};
   TFT_eSprite *spr_{nullptr};
   uint16_t width_{0};
   uint16_t height_{0};
   bool disable_buffer_{false};
+  bool powered_on_{false};
 };
 
 }  // namespace tdisplays3

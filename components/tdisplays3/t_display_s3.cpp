@@ -61,6 +61,8 @@ void TDisplayS3::setup() {
   this->tft_ = new TFT_eSPI();
   this->tft_->init();
 
+  this->power_on();
+  
   //Set the roptation on the TFT driver, instead of the intertal display modules.
   switch (this->get_rotation())
   {
@@ -115,6 +117,7 @@ void TDisplayS3::dump_config() {
 }
 
 void TDisplayS3::fill(Color color) { 
+  if (!powered_on_) return;
 
   if (this->disable_buffer_) {
     this->tft_->fillScreen(display::ColorUtil::color_to_565(color));
@@ -124,6 +127,7 @@ void TDisplayS3::fill(Color color) {
 }
 
 void TDisplayS3::draw_absolute_pixel_internal(int x, int y, Color color) {
+  if (!powered_on_) return;
 
   if (this->disable_buffer_) {
     this->tft_->drawPixel(x, y, display::ColorUtil::color_to_565(color));
@@ -149,6 +153,7 @@ int TDisplayS3::get_height_internal() {
 }
 
 void TDisplayS3::updateArea(int16_t x1, int16_t y1, int16_t x2, int16_t y2, uint16_t *buffer, void (*ready_callback)(void)) {
+  if (!powered_on_) return;
 
 #ifdef TDISPLAYS3_USE_ASYNC_IO
     if (writer_shim::writeFrameTask_ == nullptr) {
@@ -163,6 +168,8 @@ void TDisplayS3::updateArea(int16_t x1, int16_t y1, int16_t x2, int16_t y2, uint
 }
 
 void TDisplayS3::update() {
+  if (!powered_on_) return;
+
   //Let lambdas draw their last stuff
   this->do_update_();
 
@@ -191,6 +198,17 @@ void TDisplayS3::set_dimensions(uint16_t width, uint16_t height) {
   this->width_ = width;
   this->height_ = height;
 }
+
+void TDisplayS3::power_off() {
+  this->tft_->writecommand(ST7789_DISPOFF); //turn off lcd display
+  this->powered_on_ = false;
+}
+
+void TDisplayS3::power_on() {
+  this->tft_->writecommand(ST7789_DISPON); //turn on lcd display
+  this->powered_on_ = true;
+}
+
 
 }  // namespace tdisplays3
 }  // namespace esphome
