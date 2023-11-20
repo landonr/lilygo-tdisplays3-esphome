@@ -24,6 +24,7 @@ class LilygoTDisplayS3Touchscreen : public touchscreen::Touchscreen, public Comp
   void dump_config() override;
 
   void set_interrupt_pin(InternalGPIOPin *pin) { this->interrupt_pin_ = pin; }
+  void set_reset_pin(InternalGPIOPin *pin) { this->reset_pin_ = pin; }
   void set_offset(int16_t x_offset, int16_t y_offset) {
     x_offset_ = x_offset;
     y_offset_ = y_offset;
@@ -37,6 +38,7 @@ class LilygoTDisplayS3Touchscreen : public touchscreen::Touchscreen, public Comp
 
  protected:
   InternalGPIOPin *interrupt_pin_;
+  InternalGPIOPin *reset_pin_;
   int16_t x_offset_;
   int16_t y_offset_;
   uint16_t firmware_version_;

@@ -37,6 +37,11 @@ void IRAM_ATTR Store::gpio_intr(Store *store) { store->touch = true; }
 
 void LilygoTDisplayS3Touchscreen::setup() {
   ESP_LOGCONFIG(TAG, "Setting up Lilygo T-Display S3 CST816 Touchscreen...");
+
+  this->reset_pin_->pin_mode(gpio::FLAG_OUTPUT | gpio::FLAG_PULLDOWN);
+  this->reset_pin_->setup();
+  this->reset_pin_->digital_write(false);
+
   this->interrupt_pin_->pin_mode(gpio::FLAG_INPUT | gpio::FLAG_PULLUP);
   this->interrupt_pin_->setup();
 
@@ -140,7 +145,13 @@ void LilygoTDisplayS3Touchscreen::dump_config() {
 }
 
 void LilygoTDisplayS3Touchscreen::sleep() { 
+  
   this->interrupt_pin_->detach_interrupt();
+
+  this->reset_pin_->digital_write(false);
+  delay(5);
+  this->reset_pin_->digital_write(true);
+  delay(50);
   this->write_register(SLEEP_REGISTER, SLEEP_CMD, 1); 
 }
 
