@@ -29,6 +29,8 @@ class LilygoTDisplayS3Touchscreen : public touchscreen::Touchscreen, public Comp
     y_offset_ = y_offset;
   }
 
+  void sleep();
+
   int16_t x;
   int16_t y;
   

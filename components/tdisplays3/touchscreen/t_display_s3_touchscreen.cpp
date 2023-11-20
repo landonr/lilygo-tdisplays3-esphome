@@ -9,6 +9,8 @@ using namespace touchscreen;
 
 static const char *const TAG = "lilygo_tdisplay_s3.touchscreen";
 
+static const uint8_t SLEEP_REGISTER = 0xA5;
+
 static const uint8_t POWER_REGISTER = 0xD6;
 static const uint8_t WORK_MODE_REGISTER = 0x00;
 
@@ -21,6 +23,7 @@ static const uint8_t FIRMWARE_LOW_INDEX = 0xA6;
 static const uint8_t FIRMWARE_HIGH_INDEX = 0xA7;
 
 static const uint8_t WAKEUP_CMD[1] = {0x06};
+static const uint8_t SLEEP_CMD[1] = {0x03};
 
 #define ERROR_CHECK(err) \
   if ((err) != i2c::ERROR_OK) { \
@@ -33,7 +36,7 @@ int16_t combine_h4l8(uint8_t high, uint8_t low) { return (high & 0x0F) << 8 | lo
 void IRAM_ATTR Store::gpio_intr(Store *store) { store->touch = true; }
 
 void LilygoTDisplayS3Touchscreen::setup() {
-  ESP_LOGCONFIG(TAG, "Setting up Lilygo T-Display S3 Touchscreen...");
+  ESP_LOGCONFIG(TAG, "Setting up Lilygo T-Display S3 CST816 Touchscreen...");
   this->interrupt_pin_->pin_mode(gpio::FLAG_INPUT | gpio::FLAG_PULLUP);
   this->interrupt_pin_->setup();
 
@@ -135,6 +138,12 @@ void LilygoTDisplayS3Touchscreen::dump_config() {
   ESP_LOGCONFIG(TAG, "  Offset: (%d, %d)", this->x_offset_, this->y_offset_);
   ESP_LOGCONFIG(TAG, "  Firmware version: %d", this->firmware_version_);
 }
+
+void LilygoTDisplayS3Touchscreen::sleep() { 
+  this->interrupt_pin_->detach_interrupt();
+  this->write_register(SLEEP_REGISTER, SLEEP_CMD, 1); 
+}
+
 
 }  // namespace tdisplays3
 }  // namespace esphome
