@@ -13,6 +13,11 @@ Lilygo T-display S3 (ST7789) running ESPHome using patched tft_espi
 ```
 esphome:
   name: s3
+  friendly_name: ESP32-S3 T-Display
+  platformio_options:
+    board_build.f_flash: 80000000L
+    board_build.partitions: default_16MB.csv
+    board_build.arduino.memory_type: qio_opi
 
 external_components:
   - source: github://landonr/lilygo-tdisplays3-esphome
@@ -23,6 +28,10 @@ esp32:
   variant: esp32s3
   framework:
     type: arduino
+  flash_size: 16MB
+
+# Enable logging
+logger:
 
 # Enable Home Assistant API
 api:
@@ -34,17 +43,47 @@ wifi:
   ssid: !secret wifi_ssid
   password: !secret wifi_password
 
+  # Enable fallback hotspot (captive portal) in case wifi connection fails
+  ap:
+    ssid: "S3 Fallback Hotspot"
+    password: "zQ9tuPKIfFMu"
+
 time:
   - platform: homeassistant
     id: ha_time
 
-switch:
+binary_sensor:
   - platform: gpio
+    pin: 
+      number: GPIO0
+      inverted: true
+    name: "Button 1"
+  - platform: gpio
+    pin: 
+      number: GPIO14
+      inverted: true
+    name: "Button 2"
+
+output:
+  - platform: ledc
     pin: GPIO38
+    id: gpio38
+    frequency: 2000
+
+light:
+  - platform: monochromatic
+    output: gpio38
     name: "Backlight"
-    id: backlight
-    internal: true
     restore_mode: RESTORE_DEFAULT_ON
+
+# You can either setup the backlight as a switch like below or make it dimmable using a light output like above
+# switch:
+#   - platform: gpio
+#     pin: GPIO38
+#     name: "Backlight"
+#     id: backlight
+#     internal: true
+#     restore_mode: RESTORE_DEFAULT_ON
 
 font:
   - file: "gfonts://Roboto"
