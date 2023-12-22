@@ -24,14 +24,31 @@ CONF_LOAD_FONTS = "load_fonts"
 CONF_LOAD_SMOOTH_FONTS = "load_smooth_fonts"
 CONF_ENABLE_LIBRARY_WARNINGS = "enable_library_warnings"
 
-TDISPLAYS3 = tdisplays3_ns.class_(
-    "TDisplayS3", cg.PollingComponent, display.DisplayBuffer
-)
+CONF_TRANSFORM = "transform"
+CONF_SWAP_XY = "swap_xy"
+CONF_MIRROR_X = "mirror_x"
+CONF_MIRROR_Y = "mirror_y"
+
+if cv.Version.parse(ESPHOME_VERSION) < cv.Version.parse("2023.12.0"):
+    TDISPLAYS3 = tdisplays3_ns.class_(
+        "TDisplayS3", cg.PollingComponent, display.DisplayBuffer
+    )
+else:
+    TDISPLAYS3 = tdisplays3_ns.class_(
+        "TDisplayS3", cg.PollingComponent, display.Display
+    )
 
 CONFIG_SCHEMA = cv.All(
     display.FULL_DISPLAY_SCHEMA.extend(
         {
             cv.GenerateID(): cv.declare_id(TDISPLAYS3),
+            cv.Optional(CONF_TRANSFORM): cv.Schema(
+                {
+                    cv.Optional(CONF_SWAP_XY, default=False): cv.boolean,
+                    cv.Optional(CONF_MIRROR_X, default=False): cv.boolean,
+                    cv.Optional(CONF_MIRROR_Y, default=False): cv.boolean,
+                }
+            ),
             cv.Optional(CONF_HEIGHT, default=320): cv.uint16_t,
             cv.Optional(CONF_WIDTH, default=170): cv.uint16_t,
             cv.Optional(CONF_BACKLIGHT, default=False): cv.boolean,
