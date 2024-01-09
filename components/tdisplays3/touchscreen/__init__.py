@@ -4,19 +4,26 @@ import esphome.config_validation as cv
 from esphome import pins
 from esphome.components import i2c, touchscreen
 from esphome.const import CONF_ID, CONF_INTERRUPT_PIN, CONF_RESET_PIN
+from esphome.const import __version__ as ESPHOME_VERSION
 
 from .. import tdisplays3_ns
 
 DEPENDENCIES = ["i2c"]
 
-LilygoTDisplayS3Touchscreen = tdisplays3_ns.class_(
-    "LilygoTDisplayS3Touchscreen",
-    touchscreen.Touchscreen,
-    cg.Component,
-    i2c.I2CDevice,
-)
+if cv.Version.parse(ESPHOME_VERSION) < cv.Version.parse("2023.12.0"):
+    LilygoTDisplayS3Touchscreen = tdisplays3_ns.class_(
+        "LilygoTDisplayS3Touchscreen",
+        touchscreen.Touchscreen,
+        cg.Component,
+        i2c.I2CDevice,
+    )
+else:
+    LilygoTDisplayS3Touchscreen = tdisplays3_ns.class_(
+        "LilygoTDisplayS3Touchscreen",
+        touchscreen.Touchscreen,
+        i2c.I2CDevice,
+    )
 
-CONF_LILYGO_TDISPLAY_S3_TOUCHSCREEN_ID = "lilygo_tdisplay_s3_touchscreen_id"
 CONF_OFFSET_X = "x_offset"
 CONF_OFFSET_Y = "y_offset"
 
@@ -32,15 +39,16 @@ CONFIG_SCHEMA = touchscreen.TOUCHSCREEN_SCHEMA.extend(
         }
     )
     .extend(i2c.i2c_device_schema(0x15))
-    .extend(cv.COMPONENT_SCHEMA)
 )
 
 
 async def to_code(config):
     var = cg.new_Pvariable(config[CONF_ID])
-    await cg.register_component(var, config)
-    await i2c.register_i2c_device(var, config)
+
+    if cv.Version.parse(ESPHOME_VERSION) < cv.Version.parse("2023.12.0"):
+        await cg.register_component(var, config)
     await touchscreen.register_touchscreen(var, config)
+    await i2c.register_i2c_device(var, config)
 
     interrupt_pin = await cg.gpio_pin_expression(config[CONF_INTERRUPT_PIN])
     cg.add(var.set_interrupt_pin(interrupt_pin))

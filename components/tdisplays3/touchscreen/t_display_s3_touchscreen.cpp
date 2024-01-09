@@ -31,15 +31,21 @@ static const uint8_t WAKEUP_CMD[1] = {0x06};
 
 int16_t combine_h4l8(uint8_t high, uint8_t low) { return (high & 0x0F) << 8 | low; }
 
+#if ESPHOME_VERSION_CODE < VERSION_CODE(2023, 12, 0)
 void Store::gpio_intr(Store *store) { store->touch = true; }
+#endif  // VERSION_CODE(2023, 12, 0)
 
 void LilygoTDisplayS3Touchscreen::setup() {
   ESP_LOGCONFIG(TAG, "Setting up Lilygo T-Display S3 Touchscreen...");
   this->interrupt_pin_->pin_mode(gpio::FLAG_INPUT | gpio::FLAG_PULLUP);
   this->interrupt_pin_->setup();
 
+#if ESPHOME_VERSION_CODE < VERSION_CODE(2023, 12, 0)
   this->store_.pin = this->interrupt_pin_->to_isr();
   this->interrupt_pin_->attach_interrupt(Store::gpio_intr, &this->store_, gpio::INTERRUPT_FALLING_EDGE);
+#else   // VERSION_CODE(2023, 12, 0)
+  this->attach_interrupt_(this->interrupt_pin_, gpio::INTERRUPT_FALLING_EDGE);
+#endif  // VERSION_CODE(2023, 12, 0)
 
   this->write_register(POWER_REGISTER, WAKEUP_CMD, 1);
 
@@ -50,8 +56,13 @@ void LilygoTDisplayS3Touchscreen::setup() {
   ERROR_CHECK(err);
 
   this->firmware_version_ = buffer[FIRMWARE_HIGH_INDEX] << 8 & buffer[FIRMWARE_LOW_INDEX];
+#if ESPHOME_VERSION_CODE >= VERSION_CODE(2023, 12, 0)
+  this->x_raw_max_ = 170;
+  this->y_raw_max_ = 320;
+#endif  // VERSION_CODE(2023, 12, 0)
 }
 
+#if ESPHOME_VERSION_CODE < VERSION_CODE(2023, 12, 0)
 void LilygoTDisplayS3Touchscreen::loop() {
   if (!this->store_.touch) {
     for (auto *listener : this->touch_listeners_)
@@ -59,7 +70,9 @@ void LilygoTDisplayS3Touchscreen::loop() {
     return;
   }
   this->store_.touch = false;
-
+#else   // VERSION_CODE(2023, 12, 0)
+void LilygoTDisplayS3Touchscreen::update_touches() {
+#endif  // VERSION_CODE(2023, 12, 0)
   uint8_t point = 0;
   uint8_t buffer[40] = {0};
   uint32_t sum_l = 0, sum_h = 0;
@@ -70,6 +83,9 @@ void LilygoTDisplayS3Touchscreen::loop() {
 
   if (buffer[TOUCH_NUM_INDEX] == 0) {
     ESP_LOGV(TAG, "touch released");
+#if ESPHOME_VERSION_CODE >= VERSION_CODE(2023, 12, 0)
+    return;
+#endif  // VERSION_CODE(2023, 12, 0)
   }
 
   point = buffer[TOUCH_NUM_INDEX] & 0x0f;
@@ -88,6 +104,7 @@ void LilygoTDisplayS3Touchscreen::loop() {
   x = combine_h4l8(xh, xl);
   y = combine_h4l8(yh, yl);
 
+#if ESPHOME_VERSION_CODE < VERSION_CODE(2023, 12, 0)
   switch (this->rotation_) {
     default:
     case ROTATE_0_DEGREES:
@@ -107,18 +124,26 @@ void LilygoTDisplayS3Touchscreen::loop() {
       tp.y = x;
       break;
   }
+#else   // VERSION_CODE(2023, 12, 0)
+  tp.x = x;
+  tp.y = y;
+#endif  // VERSION_CODE(2023, 12, 0)
   tp.x += this->x_offset_;
   tp.y += this->y_offset_;
 
   this->x = tp.x;
   this->y = tp.y;
+  ESP_LOGV(TAG, "Touch detected at (%d, %d). State: %d", tp.x, tp.y, tp.state);
+#if ESPHOME_VERSION_CODE < VERSION_CODE(2023, 12, 0)
   if (point == 0) {
-    ESP_LOGV(TAG, "Touch detected at (%d, %d). State: %d", tp.x, tp.y, tp.state);
     this->defer([this, tp]() { this->send_touch_(tp); });
   } else {
     for (auto *listener : this->touch_listeners_)
       listener->release();
   }
+#else   // VERSION_CODE(2023, 12, 0)
+  this->add_raw_touch_position_(1, x, y);
+#endif  // VERSION_CODE(2023, 12, 0)
 
   this->status_clear_warning();
 }
@@ -127,8 +152,13 @@ void LilygoTDisplayS3Touchscreen::dump_config() {
   ESP_LOGCONFIG(TAG, "Lilygo T-Display S3 Touchscreen:");
   LOG_I2C_DEVICE(this);
   LOG_PIN("  Interrupt Pin: ", this->interrupt_pin_);
+#if ESPHOME_VERSION_CODE < VERSION_CODE(2023, 12, 0)
   ESP_LOGCONFIG(TAG, "  Rotation: %d", this->rotation_);
+#endif  // VERSION_CODE(2023, 12, 0)
   ESP_LOGCONFIG(TAG, "  Offset: (%d, %d)", this->x_offset_, this->y_offset_);
+#if ESPHOME_VERSION_CODE >= VERSION_CODE(2023, 12, 0)
+  ESP_LOGCONFIG(TAG, "  Max Raw Coordinates: (%d, %d)", this->x_raw_max_, this->y_raw_max_);
+#endif  // VERSION_CODE(2023, 12, 0)
   ESP_LOGCONFIG(TAG, "  Firmware version: %d", this->firmware_version_);
 }
 

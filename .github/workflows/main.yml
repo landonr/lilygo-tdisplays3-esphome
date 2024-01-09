@@ -25,6 +25,8 @@ jobs:
           extensions: 'h,cpp'
           style: file
           clangFormatVersion: 16
+      - name: "Replace branch reference"
+        run: sed -i "s#\(github://${{ github.repository }}\)\(@[^ ]*\)\?#\1@${{ github.head_ref }}#" ${{ matrix.devices }}.yaml
       - uses: esphome/build-action@v1
         with:
           yaml_file: ${{ matrix.devices }}.yaml
