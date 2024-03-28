@@ -25,15 +25,24 @@ class TDisplayS3 : public PollingComponent, public display::DisplayBuffer {
   display::DisplayType get_display_type() override { return display::DisplayType::DISPLAY_TYPE_COLOR; }
   void draw_absolute_pixel_internal(int x, int y, Color color) override;
 
-  void update() override;
+  float get_setup_priority() const override { return esphome::setup_priority::HARDWARE; };
 
+  void update() override;
+  void updateArea(int16_t x1, int16_t y1, int16_t x2, int16_t y2, uint16_t *buffer, void (*ready_callback)(void)) override;  
   void set_dimensions(uint16_t width, uint16_t height);
+  
+  void set_disable_buffer(bool value) { this->disable_buffer_ = value; }
+
+  void power_off();
+  void power_on();
 
  private:
   TFT_eSPI *tft_{nullptr};
   TFT_eSprite *spr_{nullptr};
   uint16_t width_{0};
   uint16_t height_{0};
+  bool disable_buffer_{false};
+  bool powered_on_{false};
 };
 
 }  // namespace tdisplays3

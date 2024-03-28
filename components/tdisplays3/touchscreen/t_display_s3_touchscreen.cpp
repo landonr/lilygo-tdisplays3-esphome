@@ -9,6 +9,8 @@ using namespace touchscreen;
 
 static const char *const TAG = "lilygo_tdisplay_s3.touchscreen";
 
+static const uint8_t SLEEP_REGISTER = 0xA5;
+
 static const uint8_t POWER_REGISTER = 0xD6;
 static const uint8_t WORK_MODE_REGISTER = 0x00;
 
@@ -21,22 +23,27 @@ static const uint8_t FIRMWARE_LOW_INDEX = 0xA6;
 static const uint8_t FIRMWARE_HIGH_INDEX = 0xA7;
 
 static const uint8_t WAKEUP_CMD[1] = {0x06};
+static const uint8_t SLEEP_CMD[1] = {0x03};
 
 #define ERROR_CHECK(err) \
   if ((err) != i2c::ERROR_OK) { \
     ESP_LOGE(TAG, "Failed to communicate!"); \
-    this->status_set_warning(); \
     return; \
   }
 
 int16_t combine_h4l8(uint8_t high, uint8_t low) { return (high & 0x0F) << 8 | low; }
 
 #if ESPHOME_VERSION_CODE < VERSION_CODE(2023, 12, 0)
-void Store::gpio_intr(Store *store) { store->touch = true; }
+void IRAM_ATTR Store::gpio_intr(Store *store) { store->touch = true; }
 #endif  // VERSION_CODE(2023, 12, 0)
 
 void LilygoTDisplayS3Touchscreen::setup() {
-  ESP_LOGCONFIG(TAG, "Setting up Lilygo T-Display S3 Touchscreen...");
+  ESP_LOGCONFIG(TAG, "Setting up Lilygo T-Display S3 CST816 Touchscreen...");
+
+  this->reset_pin_->pin_mode(gpio::FLAG_OUTPUT | gpio::FLAG_PULLDOWN);
+  this->reset_pin_->setup();
+  this->reset_pin_->digital_write(false);
+
   this->interrupt_pin_->pin_mode(gpio::FLAG_INPUT | gpio::FLAG_PULLUP);
   this->interrupt_pin_->setup();
 
@@ -131,16 +138,24 @@ void LilygoTDisplayS3Touchscreen::update_touches() {
   tp.x += this->x_offset_;
   tp.y += this->y_offset_;
 
+  if (tp.x < 0)
+    tp.x = 0;
+  if (tp.y < 0)
+    tp.y = 0;
+
   this->x = tp.x;
   this->y = tp.y;
   ESP_LOGV(TAG, "Touch detected at (%d, %d). State: %d", tp.x, tp.y, tp.state);
 #if ESPHOME_VERSION_CODE < VERSION_CODE(2023, 12, 0)
   if (point == 0) {
     this->defer([this, tp]() { this->send_touch_(tp); });
-  } else {
     for (auto *listener : this->touch_listeners_)
       listener->release();
+  } else {
+    for (auto *listener : this->touch_listeners_)
+      listener->touch(tp);
   }
+
 #else   // VERSION_CODE(2023, 12, 0)
   this->add_raw_touch_position_(1, x, y);
 #endif  // VERSION_CODE(2023, 12, 0)
@@ -161,6 +176,18 @@ void LilygoTDisplayS3Touchscreen::dump_config() {
 #endif  // VERSION_CODE(2023, 12, 0)
   ESP_LOGCONFIG(TAG, "  Firmware version: %d", this->firmware_version_);
 }
+
+void LilygoTDisplayS3Touchscreen::sleep() { 
+  
+  this->interrupt_pin_->detach_interrupt();
+
+  this->reset_pin_->digital_write(false);
+  delay(5);
+  this->reset_pin_->digital_write(true);
+  delay(50);
+  this->write_register(SLEEP_REGISTER, SLEEP_CMD, 1); 
+}
+
 
 }  // namespace tdisplays3
 }  // namespace esphome

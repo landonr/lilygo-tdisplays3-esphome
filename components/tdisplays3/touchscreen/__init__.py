@@ -34,6 +34,9 @@ CONFIG_SCHEMA = touchscreen.TOUCHSCREEN_SCHEMA.extend(
             cv.Required(CONF_INTERRUPT_PIN): cv.All(
                 pins.internal_gpio_input_pin_schema
             ),
+            cv.Required(CONF_RESET_PIN): cv.All(
+                pins.internal_gpio_input_pin_schema
+            ),
             cv.Optional(CONF_OFFSET_X): cv.int_range(min=-32768, max=32767),
             cv.Optional(CONF_OFFSET_Y): cv.int_range(min=-32768, max=32767),
         }
@@ -52,6 +55,9 @@ async def to_code(config):
 
     interrupt_pin = await cg.gpio_pin_expression(config[CONF_INTERRUPT_PIN])
     cg.add(var.set_interrupt_pin(interrupt_pin))
+
+    reset_pin = await cg.gpio_pin_expression(config[CONF_RESET_PIN])
+    cg.add(var.set_reset_pin(reset_pin))
 
     x_offset = config.get(CONF_OFFSET_X, 0)
     y_offset = config.get(CONF_OFFSET_Y, 0)
