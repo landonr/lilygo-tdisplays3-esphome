@@ -1,8 +1,8 @@
 esphome:
-  name: s3
+  name: s3-touch
+  friendly_name: ESP32-S3 Touch T-Display
   platformio_options:
     board_build.f_flash: 80000000L
-    board_upload.flash_size: 16MB
     board_build.partitions: default_16MB.csv
     board_build.arduino.memory_type: qio_opi
 
@@ -15,6 +15,7 @@ esp32:
   variant: esp32s3
   framework:
     type: arduino
+  flash_size: 16MB
 
 # Enable logging
 logger:
@@ -40,12 +41,12 @@ time:
 
 binary_sensor:
   - platform: gpio
-    pin: 
+    pin:
       number: GPIO0
       inverted: true
     name: "Button 1"
   - platform: gpio
-    pin: 
+    pin:
       number: GPIO14
       inverted: true
     name: "Button 2"
@@ -92,19 +93,16 @@ touchscreen:
   - platform: tdisplays3
     interrupt_pin: 16
     address: 0x15
-    # The T-Display S3 has a round button below the screen.
-    # With the current rotation (270°), touching this button produces a
-    # negative coordinate (-40), which is cannot be used in ESPHome for a
-    # touch point.
-    # Adding an offset moves *all* points by that offset, allowing to use
-    # the button in this rotation as well.
-    # Rotation 180° would need an y offset instead; this is also supported.
-    x_offset: 40
     id: my_touchscreen
+    display: disp
+    transform:
+      swap_xy: true
+      mirror_y: true
     on_touch:
       - lambda: |-
+         auto touch_point = id(my_touchscreen).get_touches()[0];
          ESP_LOGI("tdisplays3-touch", "x:%d, y:%d",
-           id(my_touchscreen).x,
-           id(my_touchscreen).y
+           touch_point.x,
+           touch_point.y
          );
       # - switch.toggle: backlight

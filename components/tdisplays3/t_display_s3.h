@@ -1,6 +1,7 @@
 #pragma once
 
 #include "esphome/core/defines.h"
+#include "esphome/core/version.h"
 #include "TFT_eSPI.h"
 
 #include "esphome/components/display/display_buffer.h"
@@ -9,7 +10,11 @@
 namespace esphome {
 namespace tdisplays3 {
 
+#if ESPHOME_VERSION_CODE >= VERSION_CODE(2023, 12, 0)
+class TDisplayS3 : public display::DisplayBuffer {
+#else
 class TDisplayS3 : public PollingComponent, public display::DisplayBuffer {
+#endif  // VERSION_CODE(2023, 12, 0)
  public:
   void dump_config() override;
   void setup() override;

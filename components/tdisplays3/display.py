@@ -26,9 +26,15 @@ CONF_ENABLE_LIBRARY_WARNINGS = "enable_library_warnings"
 CONF_USE_ASYNC_IO = "use_async_io"
 CONF_DISABLE_BUFFER="disable_buffer"
 
-TDISPLAYS3 = tdisplays3_ns.class_(
-    "TDisplayS3", cg.PollingComponent, display.DisplayBuffer
-)
+
+if cv.Version.parse(ESPHOME_VERSION) < cv.Version.parse("2023.12.0"):
+    TDISPLAYS3 = tdisplays3_ns.class_(
+        "TDisplayS3", cg.PollingComponent, display.DisplayBuffer
+    )
+else:
+    TDISPLAYS3 = tdisplays3_ns.class_(
+        "TDisplayS3", cg.PollingComponent, display.Display
+    )
 
 CONFIG_SCHEMA = cv.All(
     display.FULL_DISPLAY_SCHEMA.extend(
@@ -108,7 +114,8 @@ async def to_code(config):
     cg.add_library("TFT_eSPI", None)
 
     var = cg.new_Pvariable(config[CONF_ID])
-    await cg.register_component(var, config)
+    if cv.Version.parse(ESPHOME_VERSION) < cv.Version.parse("2023.12.0"):
+        await cg.register_component(var, config)
     await display.register_display(var, config)
     cg.add(var.set_dimensions(config[CONF_WIDTH], config[CONF_HEIGHT]));
 
